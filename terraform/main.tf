@@ -20,6 +20,7 @@ terraform {
     bucket  = "malconip-terraform-state"
     key     = "tfstate-s3-bucket"
     region  = "us-east-1"
+    dynamodb_table = "terraform-state-lock-dynamo"
   }
 }
 
