@@ -1,0 +1,67 @@
+name: Deploy S3 Bucket in AWS
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-20.04
+    steps:
+
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.9
+
+    - name: Run terraform fmt check
+      working-directory: ./terraform
+      run: terraform fmt -check -diff -recursive
+
+  tf_plan_apply:
+    name: Deploy to AWS
+    runs-on: ubuntu-20.04
+    steps:
+
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.9
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: us-east-1
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Initialize Terraform
+      working-directory: ./terraform
+      run: terraform init -input=false          
+
+    - name: Plan Terraform
+      id: plan
+      continue-on-error: true
+      working-directory: ./terraform
+      run: |
+        terraform plan -input=false -no-color -out=tfplan \
+        && terraform show -no-color tfplan          
+
+    - name: Apply Terraform
+      if: steps.plan.outcome == 'success'
+      id: apply
+      continue-on-error: true
+      working-directory: ./terraform
+      run: |
+        terraform apply \
+          -input=false \
+          -no-color \
+          tfplan
