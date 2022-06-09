@@ -14,15 +14,15 @@ provider "aws" {
   region = "us-east-1"
 }
 
-terraform {
-  backend "s3" {
-    encrypt        = true
-    bucket         = "malconip-terraform-state"
-    key            = "tfstate-s3-bucket"
-    region         = "us-east-1"
-    dynamodb_table = "terraform-state-lock-dynamo"
-  }
-}
+#terraform {
+#  backend "s3" {
+#    encrypt        = true
+#    bucket         = "name-of-your-s3-bucket"
+#    key            = "tfstate-s3-bucket"
+#    region         = "us-east-1"
+#    dynamodb_table = "terraform-state-lock-dynamo"
+#  }
+#}
 
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "malconip-terraform-state"
